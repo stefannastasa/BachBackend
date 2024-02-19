@@ -23,4 +23,6 @@ public interface NoteRepository extends MongoRepository<Note, String> {
     Page<Note> findNotesByUserIdAndTitleContaining(String userId, String titleContaining, Pageable pageable);
     Integer countNotesByUserIdAndTitleContaining(String userId, String titleContaining);
 
+    Note findNoteById(String id);
+
 }

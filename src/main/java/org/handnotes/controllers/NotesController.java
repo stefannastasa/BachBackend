@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +50,21 @@ public class NotesController {
         }
     }
 
+    @RequestMapping(value="/upload", method = RequestMethod.POST)
+    public ResponseEntity<String> uploadPage(@RequestParam("id") String id, @RequestPart("file") MultipartFile file){
+        if(file.isEmpty()){
+            return new ResponseEntity<>("Invalid photo", HttpStatus.BAD_REQUEST);
+        }
+        try{
+            noteService.uploadImage(id, file);
+            return new ResponseEntity<>("Upload successful.", HttpStatus.ACCEPTED);
+
+        }catch(RuntimeException e){
+            return new ResponseEntity<>("Upload failed because" + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
     @ResponseBody
     @RequestMapping(value="", method = RequestMethod.POST)
     public ResponseEntity<IResponse> createNote(@RequestBody CreateNoteRequest creatRequest){
@@ -57,14 +73,12 @@ public class NotesController {
 
         try{
             String title = creatRequest.getTitle();
-            // TODO: create paths for aws s3 storage
-            // TODO: create signed urls for s3 upload
-            List<String> filePaths = Arrays.asList("");
+            List<String> filePaths = List.of();
             Note note = new Note(authenticatedUser.getId(), title, "", filePaths);
             noteService.saveNote(note);
 
             // TODO return the urls in the response
-            return ResponseEntity.ok(new CreateNoteReponse("Note created.", Arrays.asList(""), note));
+            return ResponseEntity.ok(new CreateNoteReponse("Note created.", note));
         } catch (Exception e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);

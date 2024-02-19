@@ -7,13 +7,11 @@ import java.util.List;
 public class CreateNoteReponse implements IResponse{
 
     private String message;
-    private List<String> uploadUrls;
 
     private Note createdNote;
 
-    public CreateNoteReponse(String message, List<String> uploadUrls, Note createdNote) {
+    public CreateNoteReponse(String message, Note createdNote) {
         this.message = message;
-        this.uploadUrls = uploadUrls;
         this.createdNote = createdNote;
     }
 
@@ -23,14 +21,6 @@ public class CreateNoteReponse implements IResponse{
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public List<String> getUploadUrls() {
-        return uploadUrls;
-    }
-
-    public void setUploadUrls(List<String> uploadUrls) {
-        this.uploadUrls = uploadUrls;
     }
 
     public Note getCreatedNote() {

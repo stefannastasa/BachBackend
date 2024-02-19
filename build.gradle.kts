@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-websocket:3.2.2")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.470")
 
 
     // jjwt

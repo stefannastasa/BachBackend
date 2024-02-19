@@ -1,6 +1,7 @@
 package org.handnotes.service;
 
 
+import org.handnotes.cloud.S3Plugin;
 import org.handnotes.model.Note;
 import org.handnotes.model.User;
 import org.handnotes.repository.NoteRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,10 +17,11 @@ import java.util.List;
 public class NoteService {
 
     private final NoteRepository noteRepository;
+    private final S3Plugin s3Plugin;
 
-
-    public NoteService(NoteRepository noteRepository) {
+    public NoteService(NoteRepository noteRepository, S3Plugin s3Plugin) {
         this.noteRepository = noteRepository;
+        this.s3Plugin = s3Plugin;
     }
 
     public List<Note> findAllByUser(String userId){
@@ -47,6 +50,17 @@ public class NoteService {
             throw new Exception("Out of scope request.");
 
         return noteRepository.findNotesByUserIdAndTitleContaining(userId, searchString, pageable);
+
+    }
+
+    public void uploadImage(String id, MultipartFile file){
+
+        Note note = noteRepository.findNoteById(id);
+
+        String fileKey = s3Plugin.uploadImage(file);
+
+        note.getImageUrl().add(fileKey);
+        noteRepository.save(note);
 
     }
 
