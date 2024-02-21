@@ -12,6 +12,7 @@ import org.handnotes.model.responses.*;
 import org.handnotes.service.NoteService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,8 +51,9 @@ public class NotesController {
         }
     }
 
-    @RequestMapping(value="/upload", method = RequestMethod.POST)
-    public ResponseEntity<String> uploadPage(@RequestParam("id") String id, @RequestPart("file") MultipartFile file){
+    @RequestMapping(value="/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadPage(@RequestParam("id") String id, @RequestPart(name = "file") MultipartFile file){
+        System.out.println("Uploading file...");
         if(file.isEmpty()){
             return new ResponseEntity<>("Invalid photo", HttpStatus.BAD_REQUEST);
         }
@@ -70,7 +72,7 @@ public class NotesController {
     public ResponseEntity<IResponse> createNote(@RequestBody CreateNoteRequest creatRequest){
         //TODO AI model entrypoint
         User authenticatedUser = authenticationService.retrieveLoggedInUser();
-
+        System.out.println("Creating note...");
         try{
             String title = creatRequest.getTitle();
             List<String> filePaths = List.of();

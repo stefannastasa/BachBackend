@@ -25,9 +25,12 @@ public class S3Plugin {
     }
 
     public String uploadImage(MultipartFile file) throws SdkClientException, AmazonServiceException {
+        System.out.println("Trying to upload file to aws...");
         File localFile = convertMultipartFileToFile(file);
-
-        PutObjectResult result = amazonS3.putObject(new PutObjectRequest(awsClientConfig.getBucketName(), file.getOriginalFilename(), localFile));
+        if(localFile != null){
+            PutObjectResult result = amazonS3.putObject(new PutObjectRequest(awsClientConfig.getBucketName(), file.getOriginalFilename(), localFile));
+            localFile.delete();
+        }
 
         return file.getOriginalFilename();
     }
