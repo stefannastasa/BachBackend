@@ -6,7 +6,6 @@ import org.handnotes.auth.AuthenticationService;
 import org.handnotes.model.Note;
 import org.handnotes.model.User;
 import org.handnotes.model.requests.CreateNoteRequest;
-import org.handnotes.model.requests.GetNotesRequest;
 import org.handnotes.model.requests.ModifyNoteRequest;
 import org.handnotes.model.responses.*;
 import org.handnotes.service.NoteService;
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -99,7 +97,7 @@ public class NotesController {
             }
 
             if(!modifyRequest.getFilePath().isEmpty()) {
-                note.setImageUrl(modifyRequest.getFilePath());
+                note.setImageUrls(modifyRequest.getFilePath());
             }
 
             if(!modifyRequest.getContent().isEmpty()){

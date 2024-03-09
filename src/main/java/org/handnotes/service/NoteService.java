@@ -3,7 +3,6 @@ package org.handnotes.service;
 
 import org.handnotes.cloud.S3Plugin;
 import org.handnotes.model.Note;
-import org.handnotes.model.User;
 import org.handnotes.repository.NoteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,11 +32,25 @@ public class NoteService {
         noteRepository.save(note);
     }
 
+    private Page<Note> convertToSignedUrls(Page<Note> toSend){
+        for (Note note: toSend){
+            List<String> keys = note.getImageUrls();
+            List<String> signedUrls = new ArrayList<>();
+            for(String photoKey: keys){
+                String signedUrl = s3Plugin.createSignedUrl(photoKey);
+                signedUrls.add(signedUrl);
+            }
+            note.setImageUrls(signedUrls);
+        }
+        return toSend;
+    }
+
     public Page<Note> findPageByUser(String userId, int page, int size) throws Exception {
         Pageable pageable = PageRequest.of(page, size);
         if(page * size > noteRepository.countNotesByUserId(userId))
             throw new Exception("Out of scope request.");
-        return noteRepository.findNotesByUserId(userId, pageable);
+
+        return convertToSignedUrls(noteRepository.findNotesByUserId(userId, pageable));
     }
 
     public Note findNoteById(String _id){
@@ -49,8 +63,7 @@ public class NoteService {
         if(page * size > noteRepository.countNotesByUserIdAndTitleContaining(userId, searchString))
             throw new Exception("Out of scope request.");
 
-        return noteRepository.findNotesByUserIdAndTitleContaining(userId, searchString, pageable);
-
+        return convertToSignedUrls(noteRepository.findNotesByUserIdAndTitleContaining(userId, searchString, pageable));
     }
 
     public void uploadImage(String id, MultipartFile file){
@@ -59,7 +72,7 @@ public class NoteService {
 
         String fileKey = s3Plugin.uploadImage(file);
 
-        note.getImageUrl().add(fileKey);
+        note.getImageUrls().add(fileKey);
         noteRepository.save(note);
 
     }
