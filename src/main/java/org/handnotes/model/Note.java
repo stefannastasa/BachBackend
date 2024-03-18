@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +23,12 @@ public class Note {
     @Getter
     private String content;
     @Getter
-    private List<String> imageUrls;
+    private List<String> imageUrls = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private List<String> thumbnailUrls = new ArrayList<>();
+
     @Getter
     private Date createdAt;
     @Getter
@@ -32,14 +38,14 @@ public class Note {
     @Setter
     private Boolean transcribed = false;
 
-    public Note(String userId, String title, String content, List<String> imageUrls) {
+    public Note(String userId, String title, String content) {
         this.userId = userId;
         this.title = title;
         this.content = content;
-        this.imageUrls = imageUrls;
         this.createdAt = new Date();
         this.updatedAt = new Date();
         this.id = generateUid();
+
     }
 
     private String generateUid(){

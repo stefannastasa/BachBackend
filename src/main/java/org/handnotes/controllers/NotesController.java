@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -35,8 +36,8 @@ public class NotesController {
         User authenticatedUser = authenticationService.retrieveLoggedInUser();
 
         try{
-            Integer pg = Integer.parseInt(page);
-            Integer sz = Integer.parseInt(size);
+            int pg = Integer.parseInt(page);
+            int sz = Integer.parseInt(size);
             Page<Note> notes = noteService.findPageByUser(authenticatedUser.getId(), pg, sz);
 
             // TODO change paths with AWS S3 signed urls for GET methods
@@ -60,6 +61,8 @@ public class NotesController {
             return new ResponseEntity<>("Upload successful.", HttpStatus.ACCEPTED);
 
         }catch(RuntimeException e){
+            System.out.println(e.getMessage());
+            System.out.println(Arrays.toString(e.getStackTrace()));
             return new ResponseEntity<>("Upload failed because" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -73,8 +76,7 @@ public class NotesController {
         System.out.println("Creating note...");
         try{
             String title = creatRequest.getTitle();
-            List<String> filePaths = List.of();
-            Note note = new Note(authenticatedUser.getId(), title, "", filePaths);
+            Note note = new Note(authenticatedUser.getId(), title, "");
             noteService.saveNote(note);
 
             // TODO return the urls in the response

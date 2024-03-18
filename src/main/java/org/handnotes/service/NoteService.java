@@ -32,15 +32,23 @@ public class NoteService {
         noteRepository.save(note);
     }
 
+    private List<String> getSigned(List<String> keys){
+        List<String> signedUrls = new ArrayList<>();
+        for(String photoKey: keys){
+            String signedUrl = s3Plugin.createSignedUrl(photoKey);
+            signedUrls.add(signedUrl);
+        }
+
+        return signedUrls;
+    }
+
     private Page<Note> convertToSignedUrls(Page<Note> toSend){
         for (Note note: toSend){
-            List<String> keys = note.getImageUrls();
-            List<String> signedUrls = new ArrayList<>();
-            for(String photoKey: keys){
-                String signedUrl = s3Plugin.createSignedUrl(photoKey);
-                signedUrls.add(signedUrl);
-            }
+            List<String> signedUrls = getSigned(note.getImageUrls());
+            List<String> thumb_signedUrls = getSigned(note.getThumbnailUrls());
+
             note.setImageUrls(signedUrls);
+            note.setThumbnailUrls(thumb_signedUrls);
         }
         return toSend;
     }
@@ -70,9 +78,10 @@ public class NoteService {
 
         Note note = noteRepository.findNoteById(id);
 
-        String fileKey = s3Plugin.uploadImage(file);
+        String fileKey = s3Plugin.uploadImages(file);
 
         note.getImageUrls().add(fileKey);
+        note.getThumbnailUrls().add("SMALL_"+fileKey);
         noteRepository.save(note);
 
     }
