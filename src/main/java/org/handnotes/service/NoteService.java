@@ -12,16 +12,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 public class NoteService {
 
     private final NoteRepository noteRepository;
     private final S3Plugin s3Plugin;
+    private final HWRService hwrService;
 
-    public NoteService(NoteRepository noteRepository, S3Plugin s3Plugin) {
+    public NoteService(NoteRepository noteRepository, S3Plugin s3Plugin, HWRService hwrService) {
         this.noteRepository = noteRepository;
         this.s3Plugin = s3Plugin;
+        this.hwrService = hwrService;
     }
 
     public List<Note> findAllByUser(String userId){
@@ -86,4 +90,20 @@ public class NoteService {
 
     }
 
+    public void uploadDone(String noteId, String userid) {
+
+        Note note = noteRepository.findNoteById(noteId);
+        List<String> signedUrls = getSigned(note.getImageUrls());
+
+        CompletableFuture<String> prediction = hwrService.getPrediction(userid, noteId, signedUrls);
+        prediction.thenAccept(result -> {
+            note.setContent(result);
+            noteRepository.save(note);
+        });
+
+    }
+
+    public void deleteNote(String noteId){
+        noteRepository.deleteById(noteId);
+    }
 }

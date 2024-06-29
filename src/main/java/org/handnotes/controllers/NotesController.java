@@ -9,6 +9,7 @@ import org.handnotes.model.requests.CreateNoteRequest;
 import org.handnotes.model.requests.ModifyNoteRequest;
 import org.handnotes.model.responses.*;
 import org.handnotes.service.NoteService;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,13 +41,22 @@ public class NotesController {
             int sz = Integer.parseInt(size);
             Page<Note> notes = noteService.findPageByUser(authenticatedUser.getId(), pg, sz);
 
-            // TODO change paths with AWS S3 signed urls for GET methods
-
             return ResponseEntity.ok(new GetNotesResponse(notes.getContent()));
         }catch(Exception e){
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping(value="", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteNote(@RequestParam("id") String noteId){
+        try{
+            noteService.deleteNote(noteId);
+            return new ResponseEntity<>("Deleted note.", HttpStatus.ACCEPTED);
+        }catch(Exception e){
+            return new ResponseEntity<>("Deletion failed because" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -67,11 +77,23 @@ public class NotesController {
         }
     }
 
+    @RequestMapping(value="/upload", method= RequestMethod.PUT)
+    public ResponseEntity<String> uploadDone(@RequestParam("id") String noteId){
+        System.out.println("Upload of pages is done.");
+        User authenticatedUser = authenticationService.retrieveLoggedInUser();
+
+        try{
+            noteService.uploadDone(noteId, authenticatedUser.getUsername());
+            return new ResponseEntity<>("Upload registered.", HttpStatus.ACCEPTED);
+        }catch(RuntimeException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>("Upload not registered" + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @ResponseBody
     @RequestMapping(value="", method = RequestMethod.POST)
     public ResponseEntity<IResponse> createNote(@RequestBody CreateNoteRequest creatRequest){
-        //TODO AI model entrypoint
         User authenticatedUser = authenticationService.retrieveLoggedInUser();
         System.out.println("Creating note...");
         try{
@@ -79,7 +101,6 @@ public class NotesController {
             Note note = new Note(authenticatedUser.getId(), title, "");
             noteService.saveNote(note);
 
-            // TODO return the urls in the response
             return ResponseEntity.ok(new CreateNoteReponse("Note created.", note));
         } catch (Exception e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -118,11 +139,9 @@ public class NotesController {
         User authenticatedUser = authenticationService.retrieveLoggedInUser();
 
         try{
-            Integer pg = Integer.parseInt(page);
-            Integer sz = Integer.parseInt(size);
+            int pg = Integer.parseInt(page);
+            int sz = Integer.parseInt(size);
             Page<Note> notes = noteService.titleFilteredPageByUser(authenticatedUser.getId(), title, pg, sz);
-
-            // TODO change paths with AWS S3 signed urls for GET methods
 
             return ResponseEntity.ok(new GetNotesResponse(notes.getContent()));
         }catch(Exception e){
@@ -130,5 +149,7 @@ public class NotesController {
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
+
     }
+
 }

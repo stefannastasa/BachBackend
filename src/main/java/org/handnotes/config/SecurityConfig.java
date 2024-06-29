@@ -52,6 +52,7 @@ public class SecurityConfig {
                 httpSecurityCsrfConfigurer.disable();
             }
         }).authorizeHttpRequests(requests -> requests.requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                 .anyRequest().authenticated()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(new CorsConfigurationSource() {
