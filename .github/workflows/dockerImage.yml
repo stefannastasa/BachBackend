@@ -28,4 +28,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/core_backend_module:latest
+        tags: ghcr.io/stefannastasa/core_backend_module:latest
