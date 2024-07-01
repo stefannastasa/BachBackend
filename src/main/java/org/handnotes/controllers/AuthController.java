@@ -7,6 +7,7 @@ import org.handnotes.model.requests.LoginRequest;
 import org.handnotes.model.requests.LogoutRequest;
 import org.handnotes.model.requests.RegisterRequest;
 import org.handnotes.model.responses.IResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,12 @@ public class AuthController {
     public ResponseEntity<IResponse> login(@RequestBody LoginRequest loginReq){
         System.out.println("Logging in... " + loginReq.getUsername());
         return authenticationService.authFlow(loginReq);
+    }
+
+    @ResponseBody
+    @RequestMapping(value="/health", method = RequestMethod.GET)
+    public ResponseEntity<String> health(){
+        return new ResponseEntity<>("Application healthy.", HttpStatus.ACCEPTED);
     }
 
 
